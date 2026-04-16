@@ -1,0 +1,56 @@
+from playwright.sync_api import sync_playwright
+
+def get_recent_decks(username, limit=5):
+    url = f"https://archidekt.com/api/decks/v3/?ownerUsername={username}&deckFormat=3&orderBy=-createdAt"
+
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        page = browser.new_page()
+
+        page.goto(url, timeout=60000)
+        page.wait_for_load_state("networkidle")
+
+        # Wait for deck links to appear
+        page.wait_for_selector("a[href^='/decks/']", timeout=10000)
+
+        deck_elements = page.query_selector_all("a[href^='/decks/']")
+
+        decks = []
+        seen_ids = set()
+
+        for el in deck_elements:
+            name = el.inner_text().strip()
+            href = el.get_attribute("href")
+
+            if not href or not name:
+                continue
+
+            deck_id = href.split("/")[-1]
+
+            # Avoid duplicates (page often has repeats)
+            if deck_id in seen_ids:
+                continue
+
+            seen_ids.add(deck_id)
+
+            decks.append({
+                "name": name,
+                "url": f"https://archidekt.com{href}"
+            })
+
+            if len(decks) >= limit:
+                break
+
+        browser.close()
+        return decks
+
+
+if __name__ == "__main__":
+    username = input("Enter Archidekt username: ")
+
+    decks = get_recent_decks(username)
+
+    print("\nMost recently edited decks:\n")
+    for i, deck in enumerate(decks, 1):
+        print(f"{i}. {deck['name']}")
+        print(f"   {deck['url']}\n")
