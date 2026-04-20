@@ -1,56 +1,141 @@
-from playwright.sync_api import sync_playwright
+import time
+import random
+import sys
 
-def get_recent_decks(username, limit=5):
-    url = f"https://archidekt.com/api/decks/v3/?ownerUsername={username}&deckFormat=3&orderBy=-createdAt"
 
-    with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
-        page = browser.new_page()
 
-        page.goto(url, timeout=60000)
-        page.wait_for_load_state("networkidle")
+FILE_NAME = "RankCache.txt"
 
-        # Wait for deck links to appear
-        page.wait_for_selector("a[href^='/decks/']", timeout=10000)
 
-        deck_elements = page.query_selector_all("a[href^='/decks/']")
+def load_existing():
+    try:
+        with open(FILE_NAME, "r") as f:
+            data = {}
 
-        decks = []
-        seen_ids = set()
+            for line in f:
+                line = line.rstrip("\n")
+                if line:
+                    owner, name, rank = line.split("%", 2)
 
-        for el in deck_elements:
-            name = el.inner_text().strip()
-            href = el.get_attribute("href")
+                    owner = owner.strip()
+                    name = name.strip()
+                    rank = int(rank.strip())
 
-            if not href or not name:
-                continue
+                    if owner not in data:
+                        data[owner] = {
+                            "names": [],
+                            "ranks": []
+                        }
 
-            deck_id = href.split("/")[-1]
+                    data[owner]["names"].append(name)
+                    data[owner]["ranks"].append(rank)
+    
+            return data
 
-            # Avoid duplicates (page often has repeats)
-            if deck_id in seen_ids:
-                continue
+    except FileNotFoundError:
+        return {}
 
-            seen_ids.add(deck_id)
 
-            decks.append({
-                "name": name,
-                "url": f"https://archidekt.com{href}"
-            })
+def save_data(data):
+    with open(FILE_NAME, "w") as f:
+        for owner, info in data.items():
+            for name, rank in zip(info["names"], info["ranks"]):
+                f.write(f"{owner} % {name} % {rank}\n")
 
-            if len(decks) >= limit:
+
+def extract_names(html):
+    names = []
+    parts = html.split("<h3>")
+    for part in parts[1:]:
+        name = part.split("</h3>")[0].strip()
+        names.append(name)
+    return names
+
+
+def update_list(html, default_owner="unknown"):
+    existing = load_existing()
+    scraped = extract_names(html)
+
+    # Since HTML doesn't provide owner, we assign default_owner
+    if default_owner not in existing:
+        existing[default_owner] = {
+            "names": [],
+            "ranks": []
+        }
+
+    for rank, name in enumerate(scraped, start=1):
+        existing[default_owner]["names"].append(name)
+        existing[default_owner]["ranks"].append(rank)
+
+    save_data(existing)
+
+def handle_derez():
+    art_drez = """
+██████╗ ███████╗██████╗ ███████╗███████╗███████╗██╗███╗   ██╗ ██████╗ 
+██╔══██╗██╔════╝██╔══██╗██╔════╝╚══███╔╝╚══███╔╝██║████╗  ██║██╔════╝ 
+██║  ██║█████╗  ██████╔╝█████╗    ███╔╝   ███╔╝ ██║██╔██╗ ██║██║  ███╗
+██║  ██║██╔══╝  ██╔══██╗██╔══╝   ███╔╝   ███╔╝  ██║██║╚██╗██║██║   ██║
+██████╔╝███████╗██║  ██║███████╗███████╗███████╗██║██║ ╚████║╚██████╔╝
+╚═════╝ ╚══════╝╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝╚═╝╚═╝  ╚═══╝ ╚═════╝ 
+                                                                       \n"""
+    art_eol = """
+███████╗███╗   ██╗██████╗      ██████╗ ███████╗    ██╗     ██╗███╗   ██╗███████╗   
+██╔════╝████╗  ██║██╔══██╗    ██╔═══██╗██╔════╝    ██║     ██║████╗  ██║██╔════╝   
+█████╗  ██╔██╗ ██║██║  ██║    ██║   ██║█████╗      ██║     ██║██╔██╗ ██║█████╗     
+██╔══╝  ██║╚██╗██║██║  ██║    ██║   ██║██╔══╝      ██║     ██║██║╚██╗██║██╔══╝     
+███████╗██║ ╚████║██████╔╝    ╚██████╔╝██║         ███████╗██║██║ ╚████║███████╗██╗
+╚══════╝╚═╝  ╚═══╝╚═════╝      ╚═════╝ ╚═╝         ╚══════╝╚═╝╚═╝  ╚═══╝╚══════╝╚═╝"""
+    
+    for ch in art_drez:
+        sys.stdout.write(ch)
+        sys.stdout.flush()
+        time.sleep(0.0001)
+
+    top = "█"
+    bottom = "╚"
+    for i in range(92):
+        top += "█"
+        bottom += "═"
+
+        # print updated bars
+        print(top)
+        print(bottom)
+
+        time.sleep(0.05 + random.uniform(-0.049, 0.03))
+
+        # Move cursor up 2 lines and clear them
+        sys.stdout.write("\033[2A")  # go up 2 lines
+        sys.stdout.write("\033[2K")   # clear line 1
+        sys.stdout.write("\033[1B")   # down 1 line
+        sys.stdout.write("\033[2K")   # clear line 2
+        sys.stdout.write("\033[1A")   # back up to top line
+
+    top += "█╗"
+    bottom += "═╝"
+    print(top)
+    print(bottom)
+    
+    print("DEREZZ COMPLETE")
+    time.sleep(0.5)
+
+    for ch in art_eol:
+        sys.stdout.write(ch)
+        sys.stdout.flush()
+        time.sleep(0.0001)
+
+def main():
+    while True:
+        user_input = input("[Enter Command]> ").lower()
+
+        match user_input:
+            case "quit" | "exit":
+                print("USER DEREZZING")
+                handle_derez()
                 break
 
-        browser.close()
-        return decks
-
+        print("You entered:", user_input)
 
 if __name__ == "__main__":
-    username = input("Enter Archidekt username: ")
+    main()
 
-    decks = get_recent_decks(username)
 
-    print("\nMost recently edited decks:\n")
-    for i, deck in enumerate(decks, 1):
-        print(f"{i}. {deck['name']}")
-        print(f"   {deck['url']}\n")
