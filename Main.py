@@ -2,6 +2,7 @@ import time
 import random
 import sys
 import re
+from pyparsing import line
 import requests
 
 
@@ -33,6 +34,9 @@ def scrape(commander_name):
 
 
 def update_cache():
+    top = "█"
+    bottom = "╚"
+    
     try:
         with open(FILE_NAME, "r") as f:
             lines = f.readlines()
@@ -42,16 +46,32 @@ def update_cache():
         for line in lines:
             if not line:
                 continue
+            
+            top += "█"
+            bottom += "═"
+            print(top)
+            print(bottom)
 
             owner, name, rank = line.split("%")
-
             new_rank = scrape(name)
+
+            sys.stdout.write("\033[2A")   # go up 2 lines
+            sys.stdout.write("\033[2K")   # clear line 1
+            sys.stdout.write("\033[1B")   # down 1 line
+            sys.stdout.write("\033[2K")   # clear line 2
+            sys.stdout.write("\033[1A")   # back up to top line
+            
 
             updated_line = f"{owner}%{name}%{new_rank}\n"
             updated_lines.append(updated_line)
 
         with open(FILE_NAME, "w") as f:
             f.writelines(updated_lines)
+        top += "█╗"
+        bottom += "═╝"
+        print(top)
+        print(bottom)
+        sort()
 
     except Exception as e:
         print("Error updating cache:", e)
@@ -61,7 +81,7 @@ def update_cache():
         return {}
     
     
-def sort():    
+def sort():
     try:
         with open(FILE_NAME, "r") as f:
             lines = f.readlines()
@@ -75,6 +95,9 @@ def sort():
 
             owner, name, rank = line.split("%")
 
+            # capitalize first letter of every word in name
+            name = name.title()
+
             # convert rank safely to int for correct numeric sorting
             try:
                 rank_int = int(rank.replace(",", ""))
@@ -84,7 +107,7 @@ def sort():
             entries.append((owner, name, rank_int))
 
         # sort by owner, then by rank
-        entries.sort(key=lambda x: (x[0].lower(), x[2]))
+        entries.sort(key=lambda x: (x[0].lower(), -x[2]))
 
         with open(FILE_NAME, "w") as f:
             for owner, name, rank in entries:
@@ -93,10 +116,16 @@ def sort():
     except Exception as e:
         print("Error sorting cache:", e)
 
-def add():
-    owner = input("Enter deck Owner: ")
+def add(owner=None):
+    if owner is None:
+        owner = input("Enter deck Owner: ")
+    owner = owner.title()
     name = input("Enter Commander Name Exactly: ")
+    name = name.title()
     rank = scrape(name)
+    if rank == 0:
+        print(f"Could not find rank for '{name}'. Please check the commander name and try again.")
+        return
     try:
         # append new entry to file
         with open(FILE_NAME, "a") as f:
@@ -104,15 +133,54 @@ def add():
 
         # re-sort file after adding
         sort()
+        print(f"Entry added for '{name}' with rank {rank}.")
+
 
     except Exception as e:
         print("Error adding entry:", e)
+
+def calc():
+    try:
+        with open(FILE_NAME, "r") as f:
+            data = {}
+
+            for line in f:
+                line = line.rstrip("\n")
+                if line:
+                    owner, name, rank = line.split("%", 2)
+
+                    owner = owner.strip()
+                    name = name.strip()
+                    rank = int(rank.strip())
+
+                    if owner not in data:
+                        data[owner] = {
+                            "names": [],
+                            "ranks": []
+                        }
+
+                    data[owner]["names"].append(name)
+                    data[owner]["ranks"].append(rank)
+    
+            for owner in data:
+                ranks = data[owner]["ranks"]
+
+                if ranks:
+                    avg = sum(ranks) / len(ranks)
+                    avg_str = f"{avg:.1f}"
+                else:
+                    avg_str = "N/A"
+
+                print(f"Owner: {owner} (Avg Rank: {avg_str})")
+    except FileNotFoundError:
+        return {}
 
 
 def display():
     try:
         with open(FILE_NAME, "r") as f:
             data = {}
+            print()
 
             for line in f:
                 line = line.rstrip("\n")
@@ -152,28 +220,10 @@ def display():
         return {}
 
 
-def handle_derez():
-    art_drez = """
-██████╗ ███████╗██████╗ ███████╗███████╗███████╗██╗███╗   ██╗ ██████╗ 
-██╔══██╗██╔════╝██╔══██╗██╔════╝╚══███╔╝╚══███╔╝██║████╗  ██║██╔════╝ 
-██║  ██║█████╗  ██████╔╝█████╗    ███╔╝   ███╔╝ ██║██╔██╗ ██║██║  ███╗
-██║  ██║██╔══╝  ██╔══██╗██╔══╝   ███╔╝   ███╔╝  ██║██║╚██╗██║██║   ██║
-██████╔╝███████╗██║  ██║███████╗███████╗███████╗██║██║ ╚████║╚██████╔╝ ██╗ ██╗ ██╗
-╚═════╝ ╚══════╝╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝╚═╝╚═╝  ╚═══╝ ╚═════╝  ╚═╝ ╚═╝ ╚═╝
-                                                                       \n"""
-    art_eol = """
-███████╗███╗   ██╗██████╗     ██████╗ ███████╗   ██╗     ██╗███╗   ██╗███████╗   
-██╔════╝████╗  ██║██╔══██╗   ██╔═══██╗██╔════╝   ██║     ██║████╗  ██║██╔════╝   
-█████╗  ██╔██╗ ██║██║  ██║   ██║   ██║█████╗     ██║     ██║██╔██╗ ██║█████╗     
-██╔══╝  ██║╚██╗██║██║  ██║   ██║   ██║██╔══╝     ██║     ██║██║╚██╗██║██╔══╝     
-███████╗██║ ╚████║██████╔╝   ╚██████╔╝██║        ███████╗██║██║ ╚████║███████╗ ██╗
-╚══════╝╚═╝  ╚═══╝╚═════╝     ╚═════╝ ╚═╝        ╚══════╝╚═╝╚═╝  ╚═══╝╚══════╝ ╚═╝"""
-    
-    art_print(art_drez)
-
+def quit():
     top = "█"
     bottom = "╚"
-    for i in range(80):
+    for i in range(60):
         top += "█"
         bottom += "═"
 
@@ -181,7 +231,7 @@ def handle_derez():
         print(top)
         print(bottom)
 
-        time.sleep(0.05 + random.uniform(-0.049, 0.03))
+        time.sleep(0.03 + random.uniform(-0.029, 0.02))
 
         # Move cursor up 2 lines and clear them
         sys.stdout.write("\033[2A")  # go up 2 lines
@@ -196,33 +246,46 @@ def handle_derez():
     print(bottom)
     
     print("DEREZZ COMPLETE")
-    time.sleep(0.5)
-
-    art_print(art_eol)
+    
 
 def main():
     while True:
-        user_input = input("[Enter Command]> ").lower()
+        user_input = input("[Enter Command]> ").strip()
 
-        match user_input:
+        parts = user_input.split(" ", 1)
+        command = parts[0].lower()
+        arg = parts[1] if len(parts) > 1 else None
+
+        match command:
             case "quit" | "exit" | "q" | "stop":
-                handle_derez()
+                quit()
                 break
+
             case "update" | "refresh":
                 print("Updating cache...")
                 update_cache()
                 print("Cache updated.")
-            case "display" | "print" | "view":
+
+            case "niche" | "average":
+                calc()
+
+            case "display" | "print" | "all" | "ls":
                 print("Displaying cache...")
                 display()
+
             case "add" | "new":
-                add()
+                if arg:
+                    add(arg)
+                else:
+                    add()
+
             case "help" | "options" | "?":
                 print("Available commands:")
-                print("  add - Add a new deck")
+                print("  add <owner> - Add a new entry for that owner")
                 print("  display - Display all decks")
                 print("  update - Update the cache")
                 print("  quit - Exit the program")
+
             case _:
                 print("Unknown command. Type 'help' for a list of commands.")
 
