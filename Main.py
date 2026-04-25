@@ -139,6 +139,33 @@ def add(owner=None):
     except Exception as e:
         print("Error adding entry:", e)
 
+def add_partners():
+    owner = input("Enter deck Owner: ")
+    owner = owner.title()
+    name1 = input("Enter 1st Commander Name Exactly: ")
+    name1 = name1.title()
+    name2 = input("Enter 2nd Commander Name Exactly: ")
+    name2 = name2.title()
+
+    names = sorted([name1, name2])
+    name = " // ".join(names)
+
+    rank = scrape(name)
+    if rank == 0:
+        print(f"Could not find rank for '{name}'. Please check the commander name and try again.")
+        return
+    try:
+        # append new entry to file
+        with open(FILE_NAME, "a") as f:
+            f.write(f"{owner}%{name}%{rank}\n")
+
+        # re-sort file after adding
+        sort()
+        print(f"Entry added for '{name}' with rank {rank}.")
+    
+    except Exception as e:
+        print("Error adding entry:", e)
+
 def calc():
     try:
         with open(FILE_NAME, "r") as f:
@@ -275,13 +302,18 @@ def main():
 
             case "add" | "new":
                 if arg:
-                    add(arg)
+                    if arg.lower() == "partners" or arg.lower() == "partner":
+                        add_partners()
+                    else:
+                        add(arg)
                 else:
                     add()
 
             case "help" | "options" | "?":
                 print("Available commands:")
-                print("  add <owner> - Add a new entry for that owner")
+                print("  niche - Show quick stats")
+                print("  add <owner-optional> - Add a new entry for that owner")
+                print("  add partners - Add command for partners")
                 print("  display - Display all decks")
                 print("  update - Update the cache")
                 print("  quit - Exit the program")
