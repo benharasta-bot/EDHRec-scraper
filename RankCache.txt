@@ -1,38 +1,39 @@
-Alana%Atarka, World Render%505
+Alana%Atarka, World Render%504
 Alana%Kaalia Of The Vast%6
-Andrew%Davros, Dalek Creator%444
-Andrew%Sonic The Hedgehog%223
-Andrew%Dr. Eggman%203
-Andrew%The Scarab God%127
-Andrew%Atla Palani, Nest Tender%62
+Andrew%Davros, Dalek Creator%445
+Andrew%Sonic The Hedgehog%221
+Andrew%Dr. Eggman%202
+Andrew%The Scarab God%128
+Andrew%Atla Palani, Nest Tender%63
 Andrew%Arcades, The Strategist%40
 Andrew%Sephiroth, Fabled Soldier%30
-Ben%Balthor The Defiled%1583
-Ben%Greven, Predator Captain%1336
-Ben%Inniaz, The Gale Force%1145
-Ben%Kaima, The Fractured Calm%1121
+Ben%Balthor The Defiled%1582
+Ben%Greven, Predator Captain%1342
+Ben%Inniaz, The Gale Force%1143
+Ben%Kaima, The Fractured Calm%1126
 Ben%Memnarch%1013
-Ben%Gornog, The Red Reaper%640
-Ben%Felix Five-Boots%371
-Ben%Codie, Vociferous Codex%305
-Ben%Marvo, Deep Operative%290
-Ben%Omnath, Locus Of Mana%236
+Ben%Gornog, The Red Reaper%642
+Ben%Felix Five-Boots%387
+Ben%Codie, Vociferous Codex%298
+Ben%Marvo, Deep Operative%289
+Ben%Omnath, Locus Of Mana%235
 Ben%Rocco, Street Chef%158
+Chris%Hearthhull, The Worldseed%34
 Dhanesh%Djeru, With Eyes Open%2073
-Dhanesh%Calamity, Galloping Inferno%1097
-Dhanesh%Thromok The Insatiable%829
-Dhanesh%Kami Of The Crescent Moon%695
-Dhanesh%Asmoranomardicadaistinaculdacar%514
-Dhanesh%Gisa, The Hellraiser%428
+Dhanesh%Calamity, Galloping Inferno%1109
+Dhanesh%Thromok The Insatiable%836
+Dhanesh%Kami Of The Crescent Moon%697
+Dhanesh%Asmoranomardicadaistinaculdacar%515
+Dhanesh%Gisa, The Hellraiser%430
 Dhanesh%Tannuk, Memorial Ensign%316
-Dhanesh%Tinybones, Bauble Burglar%255
-Ralph%Akiri, Line-Slinger // Toggo, Goblin Weaponsmith%2526
-Ralph%Don Andres, The Renegade%373
+Dhanesh%Tinybones, Bauble Burglar%253
+Ralph%Akiri, Line-Slinger // Toggo, Goblin Weaponsmith%2529
+Ralph%Don Andres, The Renegade%372
 Ralph%Kalamax, The Stormsire%267
 Ralph%Yarok, The Desecrated%150
 Ralph%Isshin, Two Heavens As One%21
-Ryan%Hogaak, Arisen Necropolis%852
-Ryan%Volrath, The Shapestealer%660
-Ryan%Eluge, The Shoreless Sea%131
-Ryan%The First Sliver%70
-Ryan%Teysa Karlov%53
+Ryan%Hogaak, Arisen Necropolis%853
+Ryan%Volrath, The Shapestealer%662
+Ryan%Eluge, The Shoreless Sea%130
+Ryan%The First Sliver%69
+Ryan%Teysa Karlov%52
